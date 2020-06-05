@@ -14,7 +14,7 @@ export interface ImageLayerProps {
 const makeUrl = (url: string) => {
   if (url) {
     if (url.startsWith('/')) {
-      return '%PUBLIC_URL%' + url
+      return process.env.PUBLIC_URL + url
     }
   }
 
@@ -27,7 +27,7 @@ export const ImageLayer: React.FC<ImageLayerProps> = (props) => {
 
   return (
     <div className={classNames(className, classes.root)}>
-      <img src={layerDef.src} alt={layerId} />
+      <img src={makeUrl(layerDef.src)} alt={layerId} />
     </div>
   )
 }
