@@ -6,13 +6,13 @@ import ThemeProvider from '@material-ui/styles/ThemeProvider'
 import createMuiTheme from '@material-ui/core/styles/createMuiTheme'
 import partialTheme from 'theme'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import { HashRouter, Route, Switch } from 'react-router-dom'
 
 const theme = createMuiTheme(partialTheme)
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter basename={process.env.PUBLIC_URL}>
       <ThemeProvider theme={theme}>
         <CssBaseline>
           <div className="App">
@@ -31,7 +31,7 @@ function App() {
           </div>
         </CssBaseline>
       </ThemeProvider>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 
