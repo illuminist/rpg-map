@@ -11,13 +11,23 @@ export interface ImageLayerProps {
   mapDef: MapType
 }
 
+const makeUrl = (url: string) => {
+  if (url) {
+    if (url.startsWith('/')) {
+      return '%PUBLIC_URL%' + url
+    }
+  }
+
+  return url
+}
+
 export const ImageLayer: React.FC<ImageLayerProps> = (props) => {
   const classes = useStyles(props)
-  const { className, layerDef } = props
+  const { className, layerId, layerDef } = props
 
   return (
     <div className={classNames(className, classes.root)}>
-      <img src={layerDef.src} />
+      <img src={layerDef.src} alt={layerId} />
     </div>
   )
 }
