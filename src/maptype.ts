@@ -1,4 +1,4 @@
-type Map2D<T> = {
+export type Map2D<T> = {
   [y: number]: { [x: number]: T }
 }
 
@@ -9,7 +9,7 @@ export type ImageLayer = {
 
 export type ObjectLayer = {
   type: 'object'
-  walkable: Map2D<number>
+  walkable: { src: string } | Map2D<number>
 }
 
 export type TilemapLayer = {

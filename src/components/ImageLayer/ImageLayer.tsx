@@ -2,6 +2,7 @@ import classNames from 'clsx'
 import * as React from 'react'
 import useStyles from './styles'
 import MapType, { ImageLayer as ImageLayerType } from 'maptype'
+import makeUrl from 'helpers/makeUrl'
 
 export interface ImageLayerProps {
   classes?: Partial<ReturnType<typeof useStyles>>
@@ -11,15 +12,6 @@ export interface ImageLayerProps {
   mapDef: MapType
 }
 
-const makeUrl = (url: string) => {
-  if (url) {
-    if (url.startsWith('/')) {
-      return process.env.PUBLIC_URL + url
-    }
-  }
-
-  return url
-}
 
 export const ImageLayer: React.FC<ImageLayerProps> = (props) => {
   const classes = useStyles(props)

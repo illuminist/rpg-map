@@ -1,0 +1,22 @@
+---
+gridCount:
+  width: 22
+  height: 12
+
+gridSize:
+  width: 50
+  height: 50
+
+layerOrder:
+  - imagelayer1
+  - objectlayer1
+
+layerDefs:
+  imagelayer1:
+    type: image
+    src: /assets/demo2/map.png
+
+  objectlayer1:
+    type: object
+    walkable:
+      src: /assets/demo2/walkabledef.png

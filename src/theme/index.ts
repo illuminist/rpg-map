@@ -7,7 +7,7 @@ import { CSSProperties } from '@material-ui/styles/withStyles'
 import * as CSS from 'csstype'
 import { Overrides } from '@material-ui/core/styles/overrides'
 
-import { amber, red } from '@material-ui/core/colors'
+import { amber, red, grey } from '@material-ui/core/colors'
 
 const flexDirectionCenter = {
   row: { justifyContent: 'center' },
@@ -59,7 +59,7 @@ export const overrides = (theme: Theme): Overrides => ({
   MuiCssBaseline: {
     '@global': {
       body: {
-        backgroundColor: theme.palette.background.default,
+        backgroundColor: grey[700],
         backgroundImage: `url("${noiseImage}")`,
         backgroundBlendMode: 'soft-light',
       },
