@@ -3,6 +3,7 @@ import * as React from 'react'
 import useStyles from './styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectObject } from 'store/game'
+import makeUrl from 'helpers/makeUrl'
 
 export interface GameObjectProps {
   classes?: Partial<ReturnType<typeof useStyles>>
@@ -40,7 +41,7 @@ export const GameObject = (props: GameObjectProps) => {
           alt={`${objectId}:${objectDef.sprite}`}
           className={classNames(className, classes.root)}
           style={style}
-          src={spriteDef.src}
+          src={makeUrl(spriteDef.src)}
           onClick={selectable ? handleSelect : undefined}
           draggable={false}
         />
