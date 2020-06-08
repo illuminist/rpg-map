@@ -20,3 +20,16 @@ layerDefs:
     type: object
     walkable:
       src: /assets/demo2/walkabledef.png
+
+objectDefs:
+  hero1:
+    sprite: hero1
+    layer: objectlayer1
+    position:
+      x: 4
+      y: 3
+
+spriteDefs:
+  hero1:
+    type: image
+    src: /assets/demo2/hero1.png
