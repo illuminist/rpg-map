@@ -28,6 +28,11 @@ export type TilemapLayer = {
 
 export type GameObject = {
   sprite: string
+  layer: string
+  position: Position
+  stat: {
+    movementRange?: number
+  }
 }
 
 export type Sprite = {
@@ -42,5 +47,8 @@ export type MapType = {
   gridSize: Size2D
   layerOrder: string[]
   layerDefs: { [layerId: string]: AllLayer }
+
+  objectDefs: { [objectId: string]: GameObject }
+  spriteDefs: { [spriteId: string]: Sprite }
 }
 export default MapType

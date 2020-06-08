@@ -91,8 +91,6 @@ export const cameraReducer = createReducer(initialCameraState, (builder) =>
           y: (state.position.y + dcy) / originalZoom,
         }
 
-        console.log(center, screen, worldCenterPost, dcx, dcy)
-
         const screenCenterDeltaCamPos = {
           x: dcx * -zoomDeltaRatio * zoomPosLag,
           y: dcy * -zoomDeltaRatio * zoomPosLag,

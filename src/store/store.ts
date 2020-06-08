@@ -7,9 +7,15 @@ const store = configureStore({
 })
 
 export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch
 
 declare module 'react-redux' {
   interface DefaultRootState extends RootState {}
+}
+
+export type ThunkConfig = {
+  // dispatch: AppDispatch
+  // state: RootState
 }
 
 export default store

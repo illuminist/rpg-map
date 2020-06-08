@@ -9,9 +9,7 @@ export interface ImageLayerProps {
   className?: string
   layerId: string
   layerDef: ImageLayerType
-  mapDef: MapType
 }
-
 
 export const ImageLayer: React.FC<ImageLayerProps> = (props) => {
   const classes = useStyles(props)

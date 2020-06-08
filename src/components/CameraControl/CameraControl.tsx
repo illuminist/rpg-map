@@ -86,7 +86,7 @@ export const CameraControl = ({ children }: CameraControlProps) => {
       window.removeEventListener('mouseup', handleMouseUp)
       window.removeEventListener('wheel', handleWheel)
     }
-  }, [])
+  }, [cameraDispatch])
 
   const { transform } = useSpring({
     // camera: [cameraState.zoom, cameraState.position.x, cameraState.position.y],

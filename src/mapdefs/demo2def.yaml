@@ -28,6 +28,17 @@ objectDefs:
     position:
       x: 4
       y: 3
+    stat:
+      movementRange: 4
+
+  hero2:
+    sprite: hero1
+    layer: objectlayer1
+    position:
+      x: 6
+      y: 4
+    stat:
+      movementRange: 4
 
 spriteDefs:
   hero1:
