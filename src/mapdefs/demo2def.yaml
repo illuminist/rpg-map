@@ -25,6 +25,7 @@ objectDefs:
   hero1:
     sprite: hero1
     layer: objectlayer1
+    group: 1
     position:
       x: 4
       y: 3
@@ -34,6 +35,7 @@ objectDefs:
   hero2:
     sprite: hero1
     layer: objectlayer1
+    group: 1
     position:
       x: 6
       y: 4

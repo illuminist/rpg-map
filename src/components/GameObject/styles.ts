@@ -7,6 +7,9 @@ export default makeStyles(
       position: 'absolute',
       userSelect: 'none',
     },
+    selectable: {
+      cursor: 'pointer',
+    },
   }),
   { name: 'GameObject', index: 1 },
 )

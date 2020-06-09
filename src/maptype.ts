@@ -30,6 +30,7 @@ export type GameObject = {
   sprite: string
   layer: string
   position: Position
+  group?:number 
   stat: {
     movementRange?: number
   }

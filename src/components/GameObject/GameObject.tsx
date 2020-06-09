@@ -3,6 +3,7 @@ import * as React from 'react'
 import useStyles from './styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectObject } from 'store/game'
+import { useSpring, animated } from 'react-spring'
 import makeUrl from 'helpers/makeUrl'
 
 export interface GameObjectProps {
@@ -21,14 +22,14 @@ export const GameObject = (props: GameObjectProps) => {
     (state) => state.map.spriteDefs[objectDef.sprite],
   )
 
-  const selectable = useSelector(() => true)
+  const selectable = useSelector((state) => !state.map.animating)
 
-  const style = {
+  const style = useSpring({
     transform: `translate(${gridSize.width * objectDef.position.x}px,${
       gridSize.height * objectDef.position.y
     }px)`,
-    cursor: selectable ? 'pointer' : 'default',
-  }
+    config: { duration: 270 },
+  })
 
   const handleSelect = () => {
     dispatch(selectObject(objectId))
@@ -37,9 +38,11 @@ export const GameObject = (props: GameObjectProps) => {
   switch (spriteDef.type) {
     case 'image':
       return (
-        <img
+        <animated.img
           alt={`${objectId}:${objectDef.sprite}`}
-          className={classNames(className, classes.root)}
+          className={classNames(className, classes.root, {
+            [classes.selectable]: selectable,
+          })}
           style={style}
           src={makeUrl(spriteDef.src)}
           onClick={selectable ? handleSelect : undefined}
