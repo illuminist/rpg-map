@@ -1,8 +1,14 @@
 import _ from 'lodash'
-import { MapType, Position, Map2D, ObjectLayer, Size2D } from 'maptype'
+import {
+  MapType,
+  Position,
+  Map2D,
+  ObjectLayer,
+  Size2D,
+  AllLayer,
+} from 'maptype'
 import { createAction, createReducer, createAsyncThunk } from '@reduxjs/toolkit'
 import { ThunkConfig, RootState } from './store'
-import makeUrl from 'helpers/makeUrl'
 import PQueue from 'js-priority-queue'
 import {
   surround4,
@@ -13,6 +19,8 @@ import {
   inbound,
 } from 'helpers/vectorUtils'
 import { sleep } from 'helpers/promiseUtils'
+import { loadImageResource, loadDataResource } from 'helpers/resourceUtils'
+import { useSelector } from 'react-redux'
 
 export type GameType = {
   selected: string | null
@@ -21,16 +29,24 @@ export type GameType = {
   moveableDisplay: { [poscoordinate: string]: true } | null
 } & MapType
 
+export const useMapDef = <T extends any>(selector: (ard: MapType) => T) => {
+  return useSelector((state: RootState) => {
+    if (state.editor.isEditing) return selector(state.editor.mapDef!)
+    return selector(state.map)
+  })
+}
+
 export const initMap = createAsyncThunk<MapType, MapType, ThunkConfig>(
   'initMap',
-  async (arg, { dispatch }) => {
-    await dispatch(prepareWalkableLayer())
+  async (arg, { dispatch, getState }) => {
     // const finalMap = produce(arg, (d) => {
     //   Object.keys(wks).forEach((id) => {
     //     ;(d.layerDefs[id] as ObjectLayer).walkable = wks[id]
     //   })
     // })
     // return finalMap
+    const tilesetDefs = arg.tilesetDefs
+    _.forEach(tilesetDefs, (tileset, id) => {})
     return arg
   },
 )
@@ -183,122 +199,133 @@ export const walkObject = createAsyncThunk<
   // dispatch(moveObject(withId))
 })
 
-const prepareWalkableLayer = createAsyncThunk<
-  { [id: string]: Map2D<number> },
+const prepareLayerResource = createAsyncThunk<
+  { [id: string]: Partial<AllLayer> },
   void,
   ThunkConfig
->('prepareWalkableLayer', async (arg, { getState }) => {
+>('prepareLayerResource', async (arg, { getState }) => {
   const map = (getState() as RootState).map!
-  const loaded: { [id: string]: Map2D<number> } = {}
+  const loaded: { [id: string]: Partial<AllLayer> } = {}
 
   await Promise.all(
-    Object.keys(map.layerDefs).map(
-      (layerId) =>
-        new Promise((resolve, reject) => {
-          const layerDef = map.layerDefs[layerId] as ObjectLayer
-          if (layerDef.walkable && 'src' in layerDef.walkable) {
-            const img = document.createElement('img')
-            img.src = makeUrl(layerDef.walkable.src)
-            img.onload = () => {
-              const canvas = document.createElement('canvas')
-              canvas.width = img.width
-              canvas.height = img.height
-              const ctx = canvas.getContext('2d')
-              if (!ctx) throw new Error('not-support-canvas')
-              ctx.drawImage(img, 0, 0, img.width, img.height)
+    Object.keys(map.layerDefs).map(async (layerId) => {
+      const layerDef = map.layerDefs[layerId]
+      if ('walkable' in layerDef && 'src' in layerDef.walkable) {
+        const img = await loadImageResource(layerDef.walkable.src)
+        const canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) throw new Error('not-support-canvas')
+        ctx.drawImage(img, 0, 0, img.width, img.height)
 
-              const wk = _.times(map.gridCount.height, (y) =>
-                _.times(map.gridCount.width, (x) => {
-                  const px = ctx.getImageData(
-                    x * map.gridSize.width + map.gridSize.width / 2,
-                    y * map.gridSize.height + map.gridSize.height / 2,
-                    1,
-                    1,
-                  ).data
-                  return px[0] ? -1 : 0
-                }),
-              )
-              loaded[layerId] = wk
-              resolve()
-            }
-            img.onerror = reject
-          } else {
-            resolve()
-          }
-        }),
-    ),
+        const wk = _.times(map.gridCount.height, (y) =>
+          _.times(map.gridCount.width, (x) => {
+            const px = ctx.getImageData(
+              x * map.gridSize.width + map.gridSize.width / 2,
+              y * map.gridSize.height + map.gridSize.height / 2,
+              1,
+              1,
+            ).data
+            return px[0] ? -1 : 0
+          }),
+        )
+        _.set(loaded, [layerId, 'walkable'], wk)
+      }
+
+      if (
+        'tileset' in layerDef &&
+        typeof layerDef.tileset === 'object' &&
+        'src' in layerDef.tileset
+      ) {
+        const data = await loadDataResource(layerDef.tileset.src)
+        console.log(data)
+        _.set(loaded, [layerId, 'tileset'], data)
+      }
+    }),
   )
   return loaded
 })
 
-export const gameReducer = createReducer<GameType>(null as any, (builder) =>
-  builder
-    .addCase(initMap.pending, (state, action) => {
-      return {
-        ..._.cloneDeep(action.meta.arg),
-        selected: null,
-        animating: false,
-        moveableDisplay: null,
-        loaded: false,
-      }
-    })
-    .addCase(initMap.fulfilled, (state, action) => {
-      state.loaded = true
-    })
-    .addCase(prepareWalkableLayer.fulfilled, (state, action) => {
-      Object.keys(action.payload).forEach((id) => {
-        ;(state.layerDefs[id] as ObjectLayer).walkable = action.payload[id]
+export const gameReducer = createReducer<GameType>(
+  null as any,
+  (builder): any =>
+    builder
+      .addCase(initMap.pending, (state, action) => {
+        return {
+          ..._.cloneDeep(action.meta.arg),
+          selected: null,
+          animating: false,
+          moveableDisplay: null,
+          loaded: false,
+        }
       })
-    })
-    .addCase(selectObject, (state, action) => {
-      const walkmap = _.cloneDeep(prepareObjectWalkMap(state, action.payload))
-      const gameObject = state.objectDefs[action.payload]
-      if (!gameObject?.stat.movementRange) return
-      state.selected = action.payload
-      state.moveableDisplay = {}
+      .addCase(initMap.fulfilled, (state, action) => {
+        state.loaded = true
+      })
+      .addCase(prepareLayerResource.fulfilled, (state, action) => {
+        Object.keys(action.payload).forEach((id) => {
+          state.layerDefs[id] = {
+            ...state.layerDefs[id],
+            ...action.payload[id],
+          } as any
+        })
+      })
+      .addCase(selectObject, (state, action) => {
+        const walkmap = _.cloneDeep(prepareObjectWalkMap(state, action.payload))
+        const gameObject = state.objectDefs[action.payload]
+        if (!gameObject?.stat.movementRange) return
+        state.selected = action.payload
+        state.moveableDisplay = {}
 
-      const visited = new PositionSet()
-      const visitQueue: [Position, number][] = [
-        [gameObject.position, gameObject.stat!.movementRange!],
-      ]
-      visited.add(gameObject.position)
+        const visited = new PositionSet()
+        const visitQueue: [Position, number][] = [
+          [gameObject.position, gameObject.stat!.movementRange!],
+        ]
+        visited.add(gameObject.position)
 
-      do {
-        const [currentPos, currentRange = -1] = visitQueue.shift() || []
-        if (!currentPos) return
-        if (currentRange < 0) continue
+        do {
+          const [currentPos, currentRange = -1] = visitQueue.shift() || []
+          if (!currentPos) return
+          if (currentRange < 0) continue
 
-        const tilegroup = _.get(walkmap, [currentPos.y, currentPos.x])
-        if (tilegroup === 0)
-          state.moveableDisplay![posToString(currentPos)] = true
+          const tilegroup = _.get(walkmap, [currentPos.y, currentPos.x])
+          if (tilegroup === 0)
+            state.moveableDisplay![posToString(currentPos)] = true
 
-        visited.add(currentPos)
+          visited.add(currentPos)
 
-        surround4(currentPos)
-          .filter(
-            (p) =>
-              inbound(p, 0, 0, state.gridCount.width, state.gridCount.height) &&
-              (_.get(walkmap, [p.y, p.x]) === 0 ||
-                _.get(walkmap, [p.y, p.x]) === gameObject.group) &&
-              !visited.has(p),
-          )
-          .forEach((p) => visitQueue.push([p, currentRange - 1]))
-      } while (visitQueue.length)
-    })
-    .addCase(deselectObject, (state, action) => {
-      state.selected = null
-      state.moveableDisplay = null
-    })
-    .addCase(moveObject, (state, action) => {
-      state.objectDefs[action.payload.objectId].position =
-        action.payload.destination
-      state.selected = null
-      state.moveableDisplay = null
-    })
-    .addCase(walkObject.pending, (state, action) => {
-      state.animating = true
-    })
-    .addCase(walkObject.fulfilled, (state, action) => {
-      state.animating = false
-    }),
+          surround4(currentPos)
+            .filter(
+              (p) =>
+                inbound(
+                  p,
+                  0,
+                  0,
+                  state.gridCount.width,
+                  state.gridCount.height,
+                ) &&
+                (_.get(walkmap, [p.y, p.x]) === 0 ||
+                  _.get(walkmap, [p.y, p.x]) === gameObject.group) &&
+                !visited.has(p),
+            )
+            .forEach((p) => visitQueue.push([p, currentRange - 1]))
+        } while (visitQueue.length)
+      })
+      .addCase(deselectObject, (state, action) => {
+        state.selected = null
+        state.moveableDisplay = null
+      })
+      .addCase(moveObject, (state, action) => {
+        state.objectDefs[action.payload.objectId].position =
+          action.payload.destination
+        state.selected = null
+        state.moveableDisplay = null
+      })
+      .addCase(walkObject.pending, (state, action) => {
+        state.animating = true
+      })
+      .addCase(walkObject.fulfilled, (state, action) => {
+        state.animating = false
+      }),
 )

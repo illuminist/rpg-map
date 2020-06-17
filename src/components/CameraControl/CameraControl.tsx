@@ -2,7 +2,6 @@ import classNames from 'clsx'
 import * as React from 'react'
 import useStyles from './styles'
 import { useSelector, useDispatch } from 'react-redux'
-import { useSpring, config, animated } from 'react-spring'
 import {
   cameraMoveStart,
   cameraMoveSourceRelative,
@@ -10,6 +9,7 @@ import {
   cameraZoomStart,
   cameraZoomRelative,
 } from 'store/camera'
+import useGlobalEvent from 'hooks/useGlobalEvent'
 export interface CameraControlProps {
   children: React.ReactNode
 }
@@ -61,39 +61,32 @@ export const CameraControl = ({ children }: CameraControlProps) => {
     }
   }
 
+  useGlobalEvent(
+    'mouseup',
+    (e) => e.button === 1 && cameraDispatch(cameraMoveEnd()),
+    [cameraDispatch],
+  )
   React.useEffect(() => {
-    const handleMouseUp = (e: MouseEvent) => {
-      if (e.button === 1) {
-        cameraDispatch(cameraMoveEnd())
-      }
-    }
-    const handleWheel = (e: WheelEvent) => {
-      ref.current &&
+    const el = ref.current
+    if (el) {
+      const handleWheel = (e: WheelEvent) => {
         cameraDispatch(
           cameraZoomRelative({
             zoom: -e.deltaY / 200,
             center: { x: e.pageX, y: e.pageY },
             screen: {
-              width: ref.current.clientWidth,
-              height: ref.current.clientHeight,
+              width: el.clientWidth,
+              height: el.clientHeight,
             },
           }),
         )
-    }
-    window.addEventListener('mouseup', handleMouseUp)
-    window.addEventListener('wheel', handleWheel)
-    return () => {
-      window.removeEventListener('mouseup', handleMouseUp)
-      window.removeEventListener('wheel', handleWheel)
+      }
+      el.addEventListener('wheel', handleWheel)
+      return () => {
+        el.removeEventListener('wheel', handleWheel)
+      }
     }
   }, [cameraDispatch])
-
-  const { transform } = useSpring({
-    // camera: [cameraState.zoom, cameraState.position.x, cameraState.position.y],
-    transform: `translate(50%,50%) translate(${-cameraState.position
-      .x}px,${-cameraState.position.y}px) scale(${cameraState.zoom})`,
-    config: config.stiff,
-  })
 
   return (
     <div
@@ -103,13 +96,14 @@ export const CameraControl = ({ children }: CameraControlProps) => {
       onMouseMove={handleMouseMove}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}>
-      <animated.div
+      <div
         className={classes.layerContainer}
         style={{
-          transform,
+          transform: `translate(50%,50%) translate(${-cameraState.position
+            .x}px,${-cameraState.position.y}px) scale(${cameraState.zoom})`,
         }}>
         {children}
-      </animated.div>
+      </div>
       <div className={classes.controlInstruction}>
         Middle mouse click and drag to move camera, middle wheel to zoom
       </div>

@@ -15,6 +15,7 @@ export default makeStyles(
       left: 0,
       height: '100%',
       width: '100%',
+      transition: theme.transitions.create('transform', { duration: 100 }),
     },
     controlInstruction: {
       position: 'fixed',

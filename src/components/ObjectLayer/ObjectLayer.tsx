@@ -71,6 +71,7 @@ export const WalkableIndicator = React.memo(
           return _.times(gridCount.width, (x) => {
             return (
               <WalkableIndicatorTile
+                key={`${x}-${y}`}
                 x={x}
                 y={y}
                 classes={classes}

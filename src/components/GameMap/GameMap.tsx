@@ -8,17 +8,19 @@ import ObjectLayer from 'components/ObjectLayer'
 import { Provider, useSelector, useDispatch } from 'react-redux'
 import CameraControl from 'components/CameraControl'
 import store from 'store/store'
-import { initMap } from 'store/game'
+import { initMap, useMapDef } from 'store/game'
+import TilemapLayer from 'components/TilemapLayer'
 
 export interface GameMapProps {
   classes?: Partial<ReturnType<typeof useStyles>>
   className?: string
   mapDef: MapType
+  overlay?: React.ReactNode
 }
 
 export const Layer = React.memo(({ layerId }: { layerId: string }) => {
   const classes = useStyles({})
-  const layerDef = useSelector((state) => state.map.layerDefs[layerId])
+  const layerDef = useMapDef((state) => state.layerDefs[layerId])
   const layerComponentRender = (layerId: string) => {
     switch (layerDef.type) {
       case 'image':
@@ -39,6 +41,15 @@ export const Layer = React.memo(({ layerId }: { layerId: string }) => {
             layerDef={layerDef}
           />
         )
+      case 'tilemap':
+        return (
+          <TilemapLayer
+            className={classes.layer}
+            key={layerId}
+            layerId={layerId}
+            layerDef={layerDef}
+          />
+        )
       default:
         return null
     }
@@ -47,7 +58,7 @@ export const Layer = React.memo(({ layerId }: { layerId: string }) => {
 })
 
 export const MapLayerContainer = React.memo(() => {
-  const layerOrder = useSelector((state) => state.map.layerOrder)
+  const layerOrder = useMapDef((state) => state.layerOrder)
 
   return (
     <>
@@ -58,12 +69,17 @@ export const MapLayerContainer = React.memo(() => {
   )
 })
 
+// const TilesetProcessor = React.useMemo(() => {
+//   const tilesetDefs = useMapDef(state.pro)
+//   return null
+// })
+
 export const GameMap: React.FC<GameMapProps> = (props) => {
   const classes = useStyles(props)
-  const { className, mapDef } = props
+  const { className, mapDef, overlay } = props
 
-  const ready = useSelector((state) => Boolean(state.map))
-  const loaded = useSelector((state) => Boolean(state.map?.loaded))
+  const ready = useMapDef((state) => Boolean(state))
+  const loaded = useMapDef((state) => Boolean((state as any).loaded))
   const dispatch = useDispatch()
   React.useEffect(() => {
     if (!ready) {
@@ -71,21 +87,18 @@ export const GameMap: React.FC<GameMapProps> = (props) => {
     }
   }, [dispatch, ready, mapDef])
 
-  return loaded && ready ? (
+  return (
     <div className={classes.root}>
       <CameraControl>
         <MapLayerContainer />
+        {overlay}
       </CameraControl>
     </div>
-  ) : null
+  )
 }
 
 export const GameRoot = (props: GameMapProps) => {
-  return (
-    <Provider store={store}>
-      <GameMap {...props} />
-    </Provider>
-  )
+  return <GameMap {...props} />
 }
 
 export default GameRoot
