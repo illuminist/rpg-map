@@ -1,0 +1,17 @@
+---
+gridCount:
+  width: 22
+  height: 18
+
+gridSize:
+  width: 16
+  height: 16
+
+image:
+  src: '/assets/tilesets/tiles-map.png'
+
+tileDefs:
+  231:
+    animation:
+      frames: [231, 253]
+      frametime: 700
