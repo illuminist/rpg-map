@@ -239,7 +239,6 @@ const prepareLayerResource = createAsyncThunk<
         'src' in layerDef.tileset
       ) {
         const data = await loadDataResource(layerDef.tileset.src)
-        console.log(data)
         _.set(loaded, [layerId, 'tileset'], data)
       }
     }),
