@@ -6,6 +6,7 @@ import {
   getTransparentImage,
   getTransparentImageHash,
 } from 'helpers/imageUtils'
+import makeUrl from 'helpers/makeUrl'
 
 export type ResourceStore = {
   [resourceType: string]: { [resourceName: string]: any }
@@ -23,14 +24,14 @@ export const processImage = createAsyncThunk(
   async (args: { src: string; transparentColor?: string[] }) =>
     new Promise<{ src: string }>((resolve) => {
       const img = document.createElement('img')
-      img.src = args.src
+      img.src = makeUrl(args.src)
       img.onload = () => {
         if (args.transparentColor) {
           resolve({
             src: getTransparentImage(img, args.transparentColor) as string,
           })
         } else {
-          resolve({ src: args.src })
+          resolve({ src: makeUrl(args.src) })
         }
       }
     }),

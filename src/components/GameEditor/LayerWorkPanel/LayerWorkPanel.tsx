@@ -126,7 +126,9 @@ export const LayerWorkPanel: React.FC<LayerWorkPanelProps> = (props) => {
   const LayerEditor = layerEditorComponent[layerDef?.type]
   return (
     <PanelBase
-      title={'Working on ' + (layerDef?.localName || '' + workingLayer)}>
+      title={
+        'Working on ' + (layerDef?.localName || workingLayer || 'nothing')
+      }>
       {LayerEditor && <LayerEditor layerId={workingLayer!} />}
     </PanelBase>
   )

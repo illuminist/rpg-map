@@ -29,6 +29,7 @@ export type EditorState = {
     tiles: { [tileId: string]: true }
   } | null
   dialog: { [dialogId: string]: any }
+  hiddenLayer: { [layerId: string]: boolean }
 }
 
 const editorInitialState: EditorState = {
@@ -48,6 +49,7 @@ const editorInitialState: EditorState = {
   },
   updatedTiles: null,
   dialog: {},
+  hiddenLayer: {},
 }
 
 export const importTileset = createAsyncThunk(
@@ -218,13 +220,16 @@ export const editor = createSlice({
         tileGridCount,
         startingPosition,
       } = action.payload
-      const layer = state.mapDef?.layerDefs[layerId]
+      if (!state.mapDef) return
+      const layer = state.mapDef.layerDefs[layerId]
       if (layer && layer.type === 'tilemap' && tileGridCount) {
         const selectTileRect = state.panel.tilemapLayerEditor.selected
         times2D(selectTileRect.width, selectTileRect.height, (dx, dy) => {
           const px = position.x + dx
           const py = position.y + dy
           if (
+            px >= 0 &&
+            py >= 0 &&
             px < state.mapDef!.gridCount.width &&
             py < state.mapDef!.gridCount.height
           ) {
@@ -322,6 +327,17 @@ export const editor = createSlice({
 
     closeDialog: (state, action: PayloadAction<{ dialog: string }>) => {
       delete state.dialog[action.payload.dialog]
+    },
+
+    hideLayer: (
+      state,
+      action: PayloadAction<{ layerId: string; hidden: boolean }>,
+    ) => {
+      if (action.payload.hidden) {
+        state.hiddenLayer[action.payload.layerId] = true
+      } else {
+        delete state.hiddenLayer[action.payload.layerId]
+      }
     },
   },
 

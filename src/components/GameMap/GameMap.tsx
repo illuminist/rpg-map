@@ -7,7 +7,7 @@ import ImageLayer from 'components/ImageLayer'
 import ObjectLayer from 'components/ObjectLayer'
 import { Provider, useSelector, useDispatch } from 'react-redux'
 import CameraControl from 'components/CameraControl'
-import store from 'store/store'
+import store, { useEditorState } from 'store/store'
 import { initMap, useMapDef } from 'store/game'
 import TilemapLayer from 'components/TilemapLayer'
 
@@ -59,12 +59,12 @@ export const Layer = React.memo(({ layerId }: { layerId: string }) => {
 
 export const MapLayerContainer = React.memo(() => {
   const layerOrder = useMapDef((state) => state.layerOrder)
-
+  const hiddenLayer = useEditorState((state) => state.hiddenLayer)
   return (
     <>
-      {layerOrder.map((layerId) => (
-        <Layer key={layerId} layerId={layerId} />
-      ))}
+      {layerOrder.map((layerId) =>
+        hiddenLayer[layerId] ? null : <Layer key={layerId} layerId={layerId} />,
+      )}
     </>
   )
 })

@@ -8,6 +8,7 @@ type CameraState = {
   position: Position
   zoom: number
   isZooming: boolean
+  showTip: boolean
 }
 const initialCameraState: CameraState = {
   isMoving: false,
@@ -19,6 +20,7 @@ const initialCameraState: CameraState = {
   },
   zoom: 1,
   isZooming: false,
+  showTip: true,
 }
 
 export const cameraMoveStart = createAction<{ sourcePosition: Position }>(
@@ -36,8 +38,13 @@ export const cameraMoveSourceRelative = createAction<Position>(
 export const cameraMoveEnd = createAction('cameraMoveEnd')
 export const cameraZoomStart = createAction('cameraZoomStart')
 export const cameraZoomEnd = createAction('cameraZoomEnd')
+export const cameraCloseTip = createAction('cameraCloseTip')
+
 export const cameraReducer = createReducer(initialCameraState, (builder) =>
   builder
+    .addCase(cameraCloseTip, (state) => {
+      state.showTip = false
+    })
     .addCase(cameraMoveStart, (state, action) => {
       state.isMoving = true
       state.moveSourcePosition = action.payload.sourcePosition

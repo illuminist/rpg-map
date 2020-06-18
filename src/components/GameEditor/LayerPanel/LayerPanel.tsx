@@ -2,20 +2,24 @@ import classNames from 'clsx'
 import * as React from 'react'
 import useStyles from './styles'
 import PanelBase from '../PanelBase'
+import Checkbox, { CheckboxProps } from '@material-ui/core/Checkbox'
 import IconButton from '@material-ui/core/IconButton'
 import CardActions from '@material-ui/core/CardActions'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import ListItemText from '@material-ui/core/ListItemText'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
+
 import { useEditorState } from 'store/store'
 import { useDispatch } from 'react-redux'
 import editor from 'store/editor'
 import AddIcon from '@material-ui/icons/Add'
 import DragHandleIcon from '@material-ui/icons/DragHandle'
-
 import DeleteIcon from '@material-ui/icons/Delete'
+import VisibilityIcon from '@material-ui/icons/Visibility'
+import VisibilityOffIcon from '@material-ui/icons/VisibilityOff'
 import { LayerType } from 'maptype'
 import {
   DragDropContext,
@@ -29,12 +33,24 @@ export interface LayerPanelProps {
   className?: string
 }
 
+const VisibilityCheckbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
+  (props, ref) => (
+    <Checkbox
+      ref={ref}
+      checkedIcon={<VisibilityIcon />}
+      icon={<VisibilityOffIcon />}
+      {...props}
+    />
+  ),
+)
+
 export const LayerPanel: React.FC<LayerPanelProps> = (props) => {
   const classes = useStyles(props)
   const { className } = props
 
   const mapDef = useEditorState((state) => state.mapDef)
   const workingLayer = useEditorState((state) => state.workingLayer)
+  const hiddenLayer = useEditorState((state) => state.hiddenLayer)
   const dispatch = useDispatch()
   const handleLayerSelect = React.useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
@@ -77,6 +93,18 @@ export const LayerPanel: React.FC<LayerPanelProps> = (props) => {
     }
   }
 
+  const handleHidden = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const t = e.currentTarget
+      const layerId = t.dataset.layerid
+      if (layerId)
+        dispatch(
+          editor.actions.hideLayer({ layerId: layerId, hidden: !t.checked }),
+        )
+    },
+    [],
+  )
+
   return (
     <DragDropContext onDragEnd={handleRearrage}>
       <PanelBase title="Layer">
@@ -103,6 +131,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = (props) => {
                           onClick={handleLayerSelect}
                           divider>
                           <ListItemText
+                            inset
                             secondary={mapDef.layerDefs[layerId].type}>
                             {mapDef.layerDefs[layerId]?.localName || layerId}
                           </ListItemText>
@@ -110,6 +139,15 @@ export const LayerPanel: React.FC<LayerPanelProps> = (props) => {
                           <span {...dragProvided.dragHandleProps}>
                             <DragHandleIcon />
                           </span>
+                          <ListItemSecondaryAction
+                            style={{ left: 16, right: 'unset' }}>
+                            <VisibilityCheckbox
+                              color="default"
+                              inputProps={{ 'data-layerid': layerId } as any}
+                              checked={!hiddenLayer[layerId]}
+                              onChange={handleHidden}
+                            />
+                          </ListItemSecondaryAction>
                         </ListItem>
                       )}
                     </Draggable>

@@ -100,7 +100,6 @@ export const TilesetPropertyDialog: React.FC<TilesetPropertyDialogProps> = (
     dispatch(editor.actions.closeDialog({ dialog: dialogName }))
   }
   const handleSave = (data: TilesetDef) => {
-    console.log(data)
     dispatch(editor.actions.createTileset({ tilesetDef: data }))
     dispatch(editor.actions.closeDialog({ dialog: dialogName }))
   }
@@ -159,6 +158,7 @@ export const TilesetPropertyDialog: React.FC<TilesetPropertyDialogProps> = (
                 <Field
                   fullWidth
                   type="number"
+                  inputProps={{ min: 0 }}
                   as={TextField}
                   name="gridCount.width"
                   label="Tile count horizontal"
@@ -168,6 +168,7 @@ export const TilesetPropertyDialog: React.FC<TilesetPropertyDialogProps> = (
                 <Field
                   fullWidth
                   type="number"
+                  inputProps={{ min: 0 }}
                   as={TextField}
                   name="gridCount.height"
                   label="Tile count vertical"
@@ -177,6 +178,7 @@ export const TilesetPropertyDialog: React.FC<TilesetPropertyDialogProps> = (
                 <Field
                   fullWidth
                   type="number"
+                  inputProps={{ min: 0 }}
                   as={TextField}
                   name="gridSize.width"
                   label="Tile width"
@@ -186,6 +188,7 @@ export const TilesetPropertyDialog: React.FC<TilesetPropertyDialogProps> = (
                 <Field
                   fullWidth
                   type="number"
+                  inputProps={{ min: 0 }}
                   as={TextField}
                   name="gridSize.height"
                   label="Tile height"

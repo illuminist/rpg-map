@@ -17,6 +17,7 @@ import { GridPointerEventHandler } from 'components/GridOverlay/GridOverlay'
 import useGlobalEvent from 'hooks/useGlobalEvent'
 import { useMapDef } from 'store/game'
 import { getTransparentImageHash } from 'helpers/imageUtils'
+import makeUrl from 'helpers/makeUrl'
 
 const useStyles = makeStyles<{ gridSize?: Size2D; zoom: number }>(
   (theme) => ({
@@ -81,15 +82,13 @@ function TilemapLayerEditor({ layerId }: { layerId: string }) {
       state.resource.image?.[getTransparentImageHash(tileResource.image)],
   )
 
-  const finalImageSrc = processedImage || imgSrc
+  const finalImageSrc = makeUrl(processedImage || imgSrc)
 
   React.useEffect(() => {
     if (!processedImage && tileResource?.image?.transparentColor) {
       dispatch(resource.actions.processImage(tileResource?.image))
     }
   }, [processedImage, tileResource?.image])
-
-  console.log(processedImage)
 
   const [zoom, setZoom] = React.useState(1)
 

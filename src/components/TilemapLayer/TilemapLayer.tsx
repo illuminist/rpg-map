@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import resource from 'store/resource'
 import { useMapDef } from 'store/game'
 import { getTransparentImageHash } from 'helpers/imageUtils'
+import makeUrl from 'helpers/makeUrl'
 
 export interface TilemapLayerProps {
   classes?: Partial<ReturnType<typeof useStyles>>
@@ -41,7 +42,7 @@ export const TilemapLayer: React.FC<TilemapLayerProps> = (props) => {
       : undefined,
   )
 
-  const finalSrc = processedImage || tilesetDef?.image.src
+  const finalSrc = makeUrl(processedImage || tilesetDef?.image.src)
 
   React.useEffect(() => {
     if (!processedImage && tilesetDef?.image?.transparentColor) {
@@ -49,21 +50,16 @@ export const TilemapLayer: React.FC<TilemapLayerProps> = (props) => {
     }
   }, [processedImage, tilesetDef?.image])
 
-  const [loadedSrc, handleLoaded] = React.useReducer(
-    (s: string, e: HTMLImageElement) => {
-      return e.src
-    },
-    '',
-  )
+  const [loadedSrc, handleLoaded] = React.useReducer((s: string, e: string) => {
+    return e
+  }, '')
   const lastRenderRef = React.useRef<{ src: string; tiles: Map2D<number> }>()
   React.useLayoutEffect(() => {
-    console.log('rener')
     const lastRender = lastRenderRef.current
     const ctx = canvasRef.current?.getContext('2d')
     const img = imgRef.current
     if (!ctx || !img || !tilesetDef) return
     if (!lastRender || lastRender.src !== loadedSrc) {
-      console.log('renessr')
       _.forEach(layerDef.tiles, (row, y: any) => {
         _.forEach(row, (tiledata, x: any) => {
           ctx.imageSmoothingEnabled = false

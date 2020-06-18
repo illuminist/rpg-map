@@ -15,10 +15,11 @@ import MenuItem from '@material-ui/core/MenuItem'
 import Toolbar from '@material-ui/core/Toolbar'
 import SettingsIcon from '@material-ui/icons/Settings'
 import EditorTextField from 'components/EditorTextField'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useStore } from 'react-redux'
 import editor from 'store/editor'
 import { useMapDef } from 'store/game'
 import YAML from 'yaml'
+import MapType from 'maptype'
 
 export interface MenuPanelProps {
   classes?: Partial<ReturnType<typeof useStyles>>
@@ -116,12 +117,13 @@ const MapPropertyDialog = (props: DialogProps) => {
   )
 }
 
+const mapToYAML = (mapDef: MapType) =>
+  YAML.stringify(_.omit(mapDef, 'loaded', 'ready'))
+
 export const RawDataDialog = (props: DialogProps) => {
   const mapDef = useMapDef((s) => s) ?? null
   const dispatch = useDispatch()
-  const rawData = React.useMemo(() => {
-    return YAML.stringify(_.omit(mapDef, 'loaded', 'ready'))
-  }, [mapDef])
+  const rawData = React.useMemo(() => mapToYAML(mapDef), [mapDef])
   return (
     mapDef && (
       <Dialog {...props}>
@@ -148,17 +150,27 @@ export const MenuPanel: React.FC<MenuPanelProps> = (props) => {
 
   const [open, setOpen] = React.useState<string | null>(null)
   const menuRef = React.useRef<HTMLButtonElement>(null)
-
-  const mapDef = useMapDef((s) => s)
+  const store = useStore()
 
   const dispatch = useDispatch()
 
   const handleAction = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     setOpen(null)
-    const action = e.currentTarget.dataset.action
+    const { action, dialog } = e.currentTarget.dataset
+    if (dialog) {
+      return setOpen(dialog)
+    }
     switch (action) {
       case 'newmap':
         dispatch(editor.actions.initialize({}))
+        return
+      case 'export':
+        const mapDef = store.getState().editor.mapDef
+        if (!mapDef) return
+        const rawData = mapToYAML(mapDef)
+        const dataUrl = `data:text/yaml;charset=UTF-8,${rawData}`
+        const a = e.currentTarget as HTMLAnchorElement
+        a.href = dataUrl
         return
     }
   }, [])
@@ -178,10 +190,19 @@ export const MenuPanel: React.FC<MenuPanelProps> = (props) => {
         <MenuItem data-action="newmap" onClick={handleAction}>
           New map
         </MenuItem>
-        <MenuItem onClick={() => setOpen('mapproperties')}>
+        <MenuItem data-dialog="mapproperties" onClick={handleAction}>
           Map properties
         </MenuItem>
-        <MenuItem onClick={() => setOpen('rawdata')}>Raw data</MenuItem>
+        <MenuItem data-dialog="rawdata" onClick={handleAction}>
+          Raw data
+        </MenuItem>
+        <MenuItem
+          component="a"
+          download="mapdef.yaml"
+          data-action="export"
+          onClick={handleAction}>
+          Export as YAML
+        </MenuItem>
       </Menu>
 
       <MapPropertyDialog

@@ -1,6 +1,8 @@
 import classNames from 'clsx'
 import * as React from 'react'
 import useStyles from './styles'
+import Button from '@material-ui/core/Button'
+import Slide from '@material-ui/core/Slide'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   cameraMoveStart,
@@ -8,6 +10,7 @@ import {
   cameraMoveEnd,
   cameraZoomStart,
   cameraZoomRelative,
+  cameraCloseTip,
 } from 'store/camera'
 import useGlobalEvent from 'hooks/useGlobalEvent'
 export interface CameraControlProps {
@@ -16,7 +19,7 @@ export interface CameraControlProps {
 
 export const CameraControl = ({ children }: CameraControlProps) => {
   const classes = useStyles({})
-  const cameraState = useSelector((state: any) => state.camera)
+  const cameraState = useSelector((state) => state.camera)
   const cameraDispatch = useDispatch()
 
   const ref = React.useRef<HTMLDivElement>(null)
@@ -36,7 +39,6 @@ export const CameraControl = ({ children }: CameraControlProps) => {
   }
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    console.log(e.touches)
     if (cameraState.isMoving) {
       cameraDispatch(
         cameraMoveSourceRelative({
@@ -48,7 +50,6 @@ export const CameraControl = ({ children }: CameraControlProps) => {
   }
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    console.log(e.touches)
     if (e.touches.length === 1) {
       cameraDispatch(
         cameraMoveStart({
@@ -104,9 +105,18 @@ export const CameraControl = ({ children }: CameraControlProps) => {
         }}>
         {children}
       </div>
-      <div className={classes.controlInstruction}>
-        Middle mouse click and drag to move camera, middle wheel to zoom
-      </div>
+      <Slide in={cameraState.showTip} direction="up">
+        <div className={classes.controlInstruction}>
+          <div className={classes.controlInstructionInner}>
+            Middle mouse click and drag to move camera, middle wheel to zoom{' '}
+            <Button
+              color="primary"
+              onClick={() => cameraDispatch(cameraCloseTip())}>
+              Understood
+            </Button>
+          </div>
+        </div>
+      </Slide>
     </div>
   )
 }
