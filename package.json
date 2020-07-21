@@ -27,7 +27,7 @@
     "color": "^3.1.2",
     "formik": "^2.1.4",
     "js-priority-queue": "^0.1.5",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "react": "^16.13.1",
     "react-app-rewired": "^2.1.6",
     "react-beautiful-dnd": "^13.0.0",
